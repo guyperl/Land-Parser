@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
@@ -23,11 +22,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-=======
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
-
-
->>>>>>> 1a664bd5426f1c27e590d721ca6e8162ae1c936f
