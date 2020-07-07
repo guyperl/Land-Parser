@@ -6,7 +6,7 @@ import random
 
 
 class LandListing:
-    def __init__(self, price=0, link='', size='', address=0, listing_type=''):
+    def __init__(self, price=0, link='', size='', address='', listing_type=''):
         self.price = price
         self.link = link
         self.size = size
@@ -101,6 +101,46 @@ def output_list(list):
         print(item)
 
 
+def parse(browser, good_listings, page_number):
+    next_page_button = browser.find_element_by_class_name('cUjspl')
+    next_page_link = next_page_button.get_attribute('href')
+
+    while True:
+        print('Parsing Page ' + str(page_number))
+        listings = browser.find_elements_by_class_name("list-card")
+
+        for listing in listings:
+            good_listings.append(parse_listing(listing))
+            time.sleep(random.uniform(5, 10))
+
+        output_list(good_listings)
+
+        next_page_button = browser.find_elements_by_class_name('cUjspl')
+        next_page_link = next_page_button[0].get_attribute('href')
+
+        browser.get(next_page_link)
+
+        next_page_button = browser.find_elements_by_class_name('cUjspl')
+        if len(next_page_button) == 0:
+            break
+        else:
+            next_page_link = next_page_button.get_attribute('href')
+
+        time.sleep(random.uniform(20, 40))
+        page_number += 1
+
+
+def set_to_lands_and_lots(browser):
+    home_type_button = browser.find_elements_by_class_name('home-type')
+    home_type_button.click()
+
+
+def detect_error_page(browser):
+    if len(browser.find_elements_by_class_name('error-content-block')) != 0:
+        return True
+    return False
+
+
 def main():
     # price = float(input("Enter price limit: "))
     # size = float(input("Enter number of acres: "))
@@ -115,34 +155,21 @@ def main():
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     driver.get("https://zillow.com/homes/celina_rb/")
 
-    html_data = driver.page_source
-
-    next_page_button = driver.find_element_by_class_name('cUjspl')
-    next_page_link = next_page_button.get_attribute('href')
-
-    while next_page_link:
-        print('Parsing Page ' + str(page_number))
-        listings = driver.find_elements_by_class_name("list-card")
-
-        print("Number of listings on this page: " + str(len(listings)))
-
-        for listing in listings:
-            good_listings.append(parse_listing(listing))
-            time.sleep(random.uniform(5, 10))
-
-        output_list(good_listings)
-
-        next_page_button = driver.find_element_by_class_name('cUjspl')
-        next_page_link = next_page_button.get_attribute('href')
-
-        driver.get(next_page_link)
-
-        next_page_button = driver.find_element_by_class_name('cUjspl')
-        next_page_link = next_page_button.get_attribute('href')
-
-        time.sleep(random.uniform(20, 40))
-
-        page_number += 1
+    if detect_error_page(driver):
+        print('ERROR PAGE DETECTED')
+        while True:
+            close = input('Would you like to close the browser(y/n)? ')
+            close = close.lower()
+            if close == 'y' or close == 'yes':
+                driver.close()
+                break
+            elif close == 'n' or close == 'no':
+                break
+            else:
+                print('The input you provided is not valid.')
+    else:
+        set_to_lands_and_lots(driver)
+        # parse(driver, good_listings, page_number)
 
 
 if __name__ == "__main__":
