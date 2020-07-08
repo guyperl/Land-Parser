@@ -2,16 +2,14 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
-import random
 
 
 class LandListing:
-    def __init__(self, price=0, link='', size='', address='', listing_type=''):
+    def __init__(self, price=0, link='', size=0, address=''):
         self.price = price
         self.link = link
         self.size = size
         self.address = address
-        self.listing_type = listing_type
 
     def get_price(self):
         return self.price
@@ -25,9 +23,6 @@ class LandListing:
     def get_address(self):
         return self.address
 
-    def get_listing_type(self):
-        return self.listing_type
-
     def set_price(self, price=0):
         self.price = price
 
@@ -40,17 +35,19 @@ class LandListing:
     def set_address(self, address=''):
         self.address = address
 
-    def set_listing_type(self, listing_type=''):
-        self.listing_type = listing_type
-
     def price_in_range(self, low, high):
-        return low <= self.price <= high
+        return low <= self.get_price() <= high
+
+    def size_in_range(self, low, high):
+        return low <= self.get_size() <= high
+
+    def listing_in_range(self, price_low, price_high, size_low, size_high):
+        return self.price_in_range(price_low, price_high) and self.size_in_range(size_low, size_high)
 
     def __str__(self):
         string = "Address: " + self.get_address() + "\n"
-        string += "Size: " + self.get_size() + "\n"
+        string += "Size: " + str(self.get_size()) + "\n"
         string += "Price: " + str(self.get_price()) + "\n"
-        string += "Listing type: " + self.get_listing_type() + "\n"
         string += "Link: " + self.get_link() + "\n"
         return string
 
@@ -75,12 +72,10 @@ def parse_listing_address(listing):
     return listing.find_element_by_class_name("list-card-addr").text
 
 
-def parse_listing_type(listing):
-    return listing.find_element_by_class_name("list-card-type").text
-
-
 def parse_listing_size(listing):
-    return listing.find_element_by_class_name("list-card-details").text
+    size = listing.find_element_by_class_name("list-card-details").text
+    size = turn_numeric(size)
+    return size
 
 
 def parse_listing_link(listing):
@@ -90,10 +85,9 @@ def parse_listing_link(listing):
 def parse_listing(listing):
     price = parse_listing_price(listing)
     address = parse_listing_address(listing)
-    listing_type = parse_listing_type(listing)
     link = parse_listing_link(listing)
     size = parse_listing_size(listing)
-    return LandListing(price=price, address=address, size=size, link=link, listing_type=listing_type)
+    return LandListing(price=price, address=address, size=size, link=link)
 
 
 def output_list(list):
@@ -101,32 +95,26 @@ def output_list(list):
         print(item)
 
 
-def parse(browser, good_listings, page_number):
-    next_page_button = browser.find_element_by_class_name('cUjspl')
-    next_page_link = next_page_button.get_attribute('href')
-
+def parse(browser, good_listings, page_number, price_low, price_high, size_low, size_high):
     while True:
         print('Parsing Page ' + str(page_number))
         listings = browser.find_elements_by_class_name("list-card")
 
         for listing in listings:
-            good_listings.append(parse_listing(listing))
-            time.sleep(random.uniform(5, 10))
+            current_listing = parse_listing(listing)
+            if current_listing.listing_in_range(price_low, price_high, size_low, size_high):
+                good_listings.append(current_listing)
 
         output_list(good_listings)
 
-        next_page_button = browser.find_elements_by_class_name('cUjspl')
-        next_page_link = next_page_button[0].get_attribute('href')
+        next_page_button = browser.find_elements_by_class_name('PaginationButton-si2hz6-0')
 
-        browser.get(next_page_link)
-
-        next_page_button = browser.find_elements_by_class_name('cUjspl')
-        if len(next_page_button) == 0:
+        try:
+            next_page_button[4].click()
+        except:
             break
-        else:
-            next_page_link = next_page_button.get_attribute('href')
 
-        time.sleep(random.uniform(20, 40))
+        time.sleep(15)
         page_number += 1
 
 
@@ -140,6 +128,10 @@ def set_to_lands_and_lots(browser):
     browser.find_elements_by_id('home-type_isMultiFamily')[0].click()
     browser.find_elements_by_id('home-type_isApartment')[0].click()
     browser.find_elements_by_id('home-type_isTownhouse')[0].click()
+
+    time.sleep(10)
+
+    browser.refresh()
 
 
 def detect_error_page(browser):
@@ -209,9 +201,8 @@ def main():
                 print('The input you provided is not valid.')
     else:
         set_to_lands_and_lots(driver)
-        # parse(driver, good_listings, page_number)
+        parse(driver, good_listings, page_number, price_low, price_high, size_low, size_high)
 
 
 if __name__ == "__main__":
     main()
-
