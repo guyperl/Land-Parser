@@ -131,8 +131,15 @@ def parse(browser, good_listings, page_number):
 
 
 def set_to_lands_and_lots(browser):
-    home_type_button = browser.find_elements_by_class_name('home-type')
+    home_type_button = browser.find_elements_by_class_name('home-type')[0]
     home_type_button.click()
+
+    browser.find_elements_by_id('home-type_isSingleFamily')[0].click()
+    browser.find_elements_by_id('home-type_isManufactured')[0].click()
+    browser.find_elements_by_id('home-type_isCondo')[0].click()
+    browser.find_elements_by_id('home-type_isMultiFamily')[0].click()
+    browser.find_elements_by_id('home-type_isApartment')[0].click()
+    browser.find_elements_by_id('home-type_isTownhouse')[0].click()
 
 
 def detect_error_page(browser):
@@ -141,9 +148,42 @@ def detect_error_page(browser):
     return False
 
 
+def get_parameters():
+    price_low = 0
+    price_high = 0
+    size_low = 0
+    size_high = 0
+
+    while True:
+        price_low = input('Input lowest price: ')
+        if price_low.isnumeric():
+            price_low = float(price_low)
+            break
+
+    while True:
+        price_high = input('Input highest price: ')
+        if price_high.isnumeric():
+            price_high = float(price_high)
+            break
+
+    while True:
+        size_low = input('Input lowest size(acres): ')
+        if size_low.isnumeric():
+            size_low = float(size_low)
+            break
+
+    while True:
+        size_high = input('Input highest size(acres): ')
+        if size_high.isnumeric():
+            size_high = float(size_high)
+            break
+
+    return price_low, price_high, size_low, size_high
+
+
 def main():
-    # price = float(input("Enter price limit: "))
-    # size = float(input("Enter number of acres: "))
+    price_low, price_high, size_low, size_high = get_parameters()
+
     page_number = 1
 
     good_listings = []
