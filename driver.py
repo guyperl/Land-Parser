@@ -2,6 +2,11 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
+import random
+import email
+import smtplib
+import ssl
+import getpass
 
 
 class LandListing:
@@ -52,12 +57,19 @@ class LandListing:
         return string
 
 
+def is_multiple_of_4(num):
+    return num % 4 == 0
+
+
 def turn_numeric(string):
     return_string = ''
 
     for i in range(len(string)):
         if string[i].isnumeric():
             return_string += string[i]
+
+    if return_string == '':
+        return 0
 
     return int(return_string)
 
@@ -90,12 +102,14 @@ def parse_listing(listing):
     return LandListing(price=price, address=address, size=size, link=link)
 
 
-def output_list(list):
-    for item in list:
+def output_list(elements):
+    for item in elements:
         print(item)
 
 
-def parse(browser, good_listings, page_number, price_low, price_high, size_low, size_high):
+def parse(browser, good_listings, page_number, price_low, price_high, size_low, size_high, filename):
+    reset_file(filename)
+
     while True:
         print('Parsing Page ' + str(page_number))
         listings = browser.find_elements_by_class_name("list-card")
@@ -104,8 +118,8 @@ def parse(browser, good_listings, page_number, price_low, price_high, size_low, 
             current_listing = parse_listing(listing)
             if current_listing.listing_in_range(price_low, price_high, size_low, size_high):
                 good_listings.append(current_listing)
-
-        output_list(good_listings)
+                write_element_to_file(filename, current_listing)
+                print(current_listing.__str__() + '\n')
 
         next_page_button = browser.find_elements_by_class_name('PaginationButton-si2hz6-0')
 
@@ -114,7 +128,14 @@ def parse(browser, good_listings, page_number, price_low, price_high, size_low, 
         except:
             break
 
-        time.sleep(15)
+        if detect_error_page(browser):
+            print('ERROR PAGE DETECTED: CLOSING BROWSER')
+            break
+
+        if is_multiple_of_4(page_number):
+            time.sleep(random.uniform(20, 25))
+        else:
+            time.sleep(15)
         page_number += 1
 
 
@@ -132,6 +153,17 @@ def set_to_lands_and_lots(browser):
     time.sleep(10)
 
     browser.refresh()
+
+
+def reset_file(filename):
+    with open(filename, 'w') as file:
+        file.write('')
+
+
+def write_element_to_file(filename, element):
+    with open(filename, 'a') as file:
+        file.write(element.__str__())
+        file.write('\n')
 
 
 def detect_error_page(browser):
@@ -170,11 +202,18 @@ def get_parameters():
             size_high = float(size_high)
             break
 
-    return price_low, price_high, size_low, size_high
+    location = input('Input location: ').strip().replace(' ', '-')
+
+    return price_low, price_high, size_low, size_high, location
+
+
+def construct_filename(location, price_low, price_high, size_low, size_high):
+    return location + '_results_' + str(price_low) + '_' + str(price_high) + '_' + str(size_low) + '_' + str(size_high)
 
 
 def main():
-    price_low, price_high, size_low, size_high = get_parameters()
+    price_low, price_high, size_low, size_high, location = get_parameters()
+    filename = construct_filename(location, price_low, price_high, size_low, size_high)
 
     page_number = 1
 
@@ -185,7 +224,7 @@ def main():
 
     global driver
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
-    driver.get("https://zillow.com/homes/celina_rb/")
+    driver.get("https://zillow.com/homes/" + location + "_rb/")
 
     if detect_error_page(driver):
         print('ERROR PAGE DETECTED')
@@ -201,7 +240,7 @@ def main():
                 print('The input you provided is not valid.')
     else:
         set_to_lands_and_lots(driver)
-        parse(driver, good_listings, page_number, price_low, price_high, size_low, size_high)
+        parse(driver, good_listings, page_number, price_low, price_high, size_low, size_high, filename)
 
 
 if __name__ == "__main__":
