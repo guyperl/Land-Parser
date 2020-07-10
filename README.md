@@ -3,7 +3,7 @@ Web scraper that finds lands/lots in specified locations. Can narrow down search
 
 # Installation
 
-Clone the repository using the html link provided.
+Clone the repository using the https link provided.
 
 ```bash
 git clone <link>
