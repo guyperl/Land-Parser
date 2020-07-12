@@ -1,12 +1,10 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from datetime import date
+
 import time
 import random
-import email
-import smtplib
-import ssl
-import getpass
 
 
 class LandListing:
@@ -150,9 +148,7 @@ def set_to_lands_and_lots(browser):
     browser.find_elements_by_id('home-type_isApartment')[0].click()
     browser.find_elements_by_id('home-type_isTownhouse')[0].click()
 
-    time.sleep(10)
-
-    browser.refresh()
+    time.sleep(15)
 
 
 def reset_file(filename):
@@ -208,7 +204,29 @@ def get_parameters():
 
 
 def construct_filename(location, price_low, price_high, size_low, size_high):
-    return location + '_results_' + str(price_low) + '_' + str(price_high) + '_' + str(size_low) + '_' + str(size_high)
+    return location + '_results_' + str(date.today()) + str(price_low) + '_' + str(price_high) + '_' + str(size_low) + '_' + str(size_high)
+
+
+def click_price(browser, price_low, price_high):
+    price_button = browser.find_elements_by_class_name("price")
+    if len(price_button) != 0:
+        price_button = price_button[0]
+    else:
+        return
+    price_button.click()
+
+    time.sleep(5)
+
+    browser.find_elements_by_id('price-exposed-min')[0].click()
+    browser.find_elements_by_id('price-exposed-min')[0].send_keys(str(price_low))
+    browser.find_elements_by_id('price-exposed-max')[0].click()
+    browser.find_elements_by_id('price-exposed-max')[0].send_keys(str(price_high))
+
+    browser.find_elements_by_class_name('home-type')[0].click()
+
+    time.sleep(5)
+
+    browser.refresh()
 
 
 def main():
@@ -240,6 +258,7 @@ def main():
                 print('The input you provided is not valid.')
     else:
         set_to_lands_and_lots(driver)
+        click_price(driver, price_low, price_high)
         parse(driver, good_listings, page_number, price_low, price_high, size_low, size_high, filename)
 
 
