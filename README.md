@@ -16,6 +16,8 @@ Simply run the driver with python. Make sure the packages are installed before r
 pip install <package>
 ```
 
+Selenium, Webdriver_manager and smtplib must be installed in order for the driver to run. 
+
 To run the program, run the following command in your command line.
 
 ```bash
