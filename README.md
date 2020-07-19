@@ -28,4 +28,4 @@ To send the information inside of a file, run the following in the command line:
 ```bash
 python Email.py
 ```
-**Disclaimer:** The email only works with gmail accounts, all other accounts must be configured differently. 
+**Disclaimer:** The email only works with gmail accounts, all other accounts must be configured differently. Emails can be sent to emails other than gmail but login must be a gmail account. 
