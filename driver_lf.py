@@ -46,16 +46,15 @@ def find_listings_on_page(driver, listings):
         listing = driver.find_elements_by_id('srch_listing_' + str(i))
         if len(listing) > 0:
             i += 1
-            listings.append(listing[0])
+            listings.append(listing[0].text)
         else:
             break
 
 
 def parse_listings(listings):
     parsed_listings = []
-    for listing in listings:
-        listing_text = listing.text.split('\n')
-        print(listing_text)
+    for i in range(len(listings)):
+        listing_text = listings[i].split('\n')
         if listing_text[0] == 'SIGNITURE' or listing_text[0] == 'PREMIUM':
             listing_text = listing_text[1:]
         current_listing = LfListing(address=listing_text[2],
@@ -83,6 +82,28 @@ def output_listings(listings):
         print(listing)
 
 
+def parse(driver, listings):
+    pages = driver.find_elements_by_class_name('pagination')[0].find_elements_by_tag_name('li')
+    for i in range(len(pages)):
+        pages[i] = pages[i].find_elements_by_tag_name('a')[0].get_attribute('href')
+
+    for i in range(len(pages)):
+        time.sleep(5)
+        if i == 1:
+            detect_pop_up(driver)
+        find_listings_on_page(driver, listings)
+        if i != len(pages) - 1:
+            driver.get(pages[i + 1])
+        else:
+            break
+
+
+def detect_pop_up(driver):
+    if len(driver.find_elements_by_class_name('save-search-modal')) != 0:
+        driver.find_elements_by_class_name('saveSearchClose')[0].click()
+        driver.refresh()
+
+
 def main():
     chrome_options = Options()
     chrome_options.add_experimental_option("detach", True)
@@ -93,7 +114,7 @@ def main():
     driver.get('https://landandfarm.com/search/TX/' + location + '-land-for-sale/')
 
     listings = []
-    find_listings_on_page(driver, listings)
+    parse(driver, listings)
 
     listings = parse_listings(listings)
     output_listings(listings)
