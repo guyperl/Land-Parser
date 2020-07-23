@@ -204,7 +204,9 @@ def get_parameters():
 
 
 def construct_filename(location, price_low, price_high, size_low, size_high):
-    return location + '_results_' + str(date.today()) + str(price_low) + '_' + str(price_high) + '_' + str(size_low) + '_' + str(size_high)
+    return location + '_results_' + str(date.today()) + \
+           str(price_low) + '_' + str(price_high) + '_' + \
+           str(size_low) + '_' + str(size_high)
 
 
 def click_price(browser, price_low, price_high):

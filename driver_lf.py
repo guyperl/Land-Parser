@@ -1,6 +1,7 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from datetime import date
 
 import time
 
@@ -87,7 +88,7 @@ def find_listings_on_page(driver, listings, price_low, price_high, size_low, siz
                                         price=turn_numeric(listing_text[0]),
                                         size=turn_numeric(listing_text[1].split(' ')[0]),
                                         link=link)
-            if current_listing.fits_parameters(price_low, price_high, size_low, size_high)
+            if current_listing.fits_parameters(price_low, price_high, size_low, size_high):
                 listings.append(current_listing)
         else:
             break
@@ -147,6 +148,11 @@ def main():
     chrome_options.add_experimental_option("detach", True)
 
     location, price_low, price_high, size_low, size_high = get_parameters()
+    filename = location + '_' + str(date.today()) + '_' + \
+               str(price_low / 1000) + '_' + \
+               str(price_high / 1000) + '_' + \
+               str(size_low) + '_' + \
+               str(size_high)
 
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     driver.get('https://landandfarm.com/search/TX/' + location + '-land-for-sale/')
@@ -155,7 +161,7 @@ def main():
     parse(driver, listings, price_low, price_high, size_low, size_high)
 
     output_listings(listings)
-    write_results()
+    write_results(filename, listings)
 
 
 if __name__ == '__main__':
