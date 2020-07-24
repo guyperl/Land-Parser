@@ -23,6 +23,8 @@ To run the scraper that uses Zillow, run the following command in your command l
 ```bash
 python driver.py
 ```
+Be careful when running the Zillow driver, Zillow has code to prevent massive scrapes of data in a specific time frame, therefore sometimes you may be met with an error page telling you to verify that you are human(this is what the detect_error_page function is for). Currently, the most efficient method is just to complete the puzzle and try running the code again(I know, not very convenient). You can also mess around with the delays between each scrape cycle to prevent this although if this script is run enough times within a day, the error page is bound to pop up. 
+
 To run the scraper that uses landandfarm, run the following command:
 
 ```bash
