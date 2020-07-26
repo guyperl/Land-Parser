@@ -6,7 +6,7 @@ Web scraper that finds lands/lots in specified locations. Can narrow down search
 Clone the repository using the https link provided.
 
 ```bash
-git clone <link>
+git clone https://github.com/iamjeffx/Land-Parser.git
 ```
 Make sure that the required python packages are installed. This can be done using pip:
 ```bash
